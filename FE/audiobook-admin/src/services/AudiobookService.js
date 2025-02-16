@@ -1,8 +1,8 @@
 import axios from "axios"
 const REST_API_BASE_URL_AUDIOBOOK = "http://localhost:8080/api/audiobooks";
-// get all categories
+// get all employees
 export const listAudioBook = () => axios.get(REST_API_BASE_URL_AUDIOBOOK);
-// add a category
+// add a employee
 export const addAudioBook = async (formData) => {
     try {
       const response = await axios.post(REST_API_BASE_URL_AUDIOBOOK, formData, {

@@ -68,9 +68,12 @@ const Sidebar = () => {
             <div className="sidebar-menu">
                 <div className="sidebar-title">Staff</div>
                 <ul className="sidebar-list">
-                    <li className="sidebar-list-item">
-                        <FontAwesomeIcon className='sidebar-icon' icon={faPeopleRoof} /> Employee
-                    </li>
+                    <Link  to="/employees" className='link'>
+                        <li className="sidebar-list-item">
+                            <FontAwesomeIcon className='sidebar-icon' icon={faPeopleRoof} /> Employees
+                        </li>
+                    </Link>
+                    
                     <li className="sidebar-list-item">
                         <FontAwesomeIcon className='sidebar-icon' icon={faBuildingCircleCheck} /> Authorization
                     </li>

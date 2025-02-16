@@ -9,6 +9,10 @@ import AudioBookUpdate from './pages/AudioBook/AudioBookUpdate/AudioBookUpdate';
 import AudioBookDetail from './pages/AudioBook/AudioBookDetail/AudioBookDetail';
 import Author from './pages/Author/Author';
 import Voice from './pages/Voice/Voice';
+import EmployeeList from './pages/Employee/EmployeeList/EmployeeList';
+import EmployeeAdd from './pages/Employee/EmployeeAdd/EmployeeAdd';
+import EmployeeUpdate from './pages/Employee/EmployeeUpdate/EmployeeUpdate';
+import EmployeeDetail from './pages/Employee/EmployeeDetail/EmployeeDetail';
 
 function App() {
   return (
@@ -25,6 +29,11 @@ function App() {
               <Route path = "/audiobooks/new-audiobook" element={<AudioBookAdd/>}/>
               <Route path = "/audiobooks/update/:id" element={<AudioBookUpdate/>}/>
               <Route path = "/audiobooks/detail/:id" element={<AudioBookDetail/>}/>
+
+              <Route path = "/employees" element={<EmployeeList/>}/>
+              <Route path = "/employees/new-employee" element={<EmployeeAdd/>}/>
+              <Route path = "/employees/update/:id" element={<EmployeeUpdate/>}/>
+              <Route path = "/employee/detail/:id" element={<EmployeeDetail/>}/>
               
             </Routes>
         </div>

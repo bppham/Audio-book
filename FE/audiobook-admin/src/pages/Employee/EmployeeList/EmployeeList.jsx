@@ -1,29 +1,29 @@
 import React, { useEffect, useState } from 'react'
-import './AudioBookList.css'
+import './EmployeeList.css'
 import {ToastContainer, toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-import { deleteAudiobook, listAudioBook } from '../../../services/AudiobookService';
 import {Link, useNavigate} from 'react-router-dom'
+import { deleteEmployee, listEmployee } from '../../../services/EmployeeService';
 
-const AudioBookList = () => {
+const EmployeeList = () => {
     const navigate = useNavigate();
 
-    // Show list audiobook
-    const [audiobooks, setAudiobooks] = useState([]);
+    // Show list employee
+    const [employees, setEmployees] = useState([]);
 
-    const fetchAudioBooks = async () => {
+    const fetchEmployee = async () => {
         try {
-            const response = await listAudioBook();
-            setAudiobooks(response.data);
+            const response = await listEmployee();
+            setEmployees(response.data);
         } catch (error) {
-            console.error("Error fetching audiobooks:", error);
-            toast.error("Failed to load audiobooks!");
+            console.error("Error fetching employees:", error);
+            toast.error("Failed to load employees!");
         }
     }
 
     useEffect(() => {
-        fetchAudioBooks();
+        fetchEmployee();
     }, []);
 
     // Preview Image
@@ -41,11 +41,11 @@ const AudioBookList = () => {
         return "http://localhost:8080/api/files/" + url;
     }
 
-    // Delete a category
+    // Delete a employee
     const handleDelete = async (id) => {
         Swal.fire({
             title: "Are you sure?",
-            text: "You won't be able to revert this audiobook!",
+            text: "You won't be able to revert this employee!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -54,11 +54,11 @@ const AudioBookList = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await deleteAudiobook(id);
-                    toast.success("Audiobook deleted successfully!");
-                    fetchAudioBooks();
+                    await deleteEmployee(id);
+                    toast.success("Employee deleted successfully!");
+                    fetchEmployee();
                 } catch (error) {
-                    toast.error("Failed to delete audiobook!");
+                    toast.error("Failed to delete Employee!");
                 }
             }
         });
@@ -66,20 +66,19 @@ const AudioBookList = () => {
 
     // Search
     const [searchTerm, setSearchTerm] = useState("");
-    const filteredAudiobooks = audiobooks.filter(audiobook =>
-        audiobook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        audiobook.id.toString().includes(searchTerm) ||
-        audiobook.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        audiobook.voice.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredEmployees = employees.filter(employee =>
+        employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        employee.id.toString().includes(searchTerm) ||
+        employee.email.toLowerCase().includes(searchTerm.toLowerCase()) 
     )
 
     // Filter
     const [sortOrder, setSortOrder] = useState("");  
-    const sortedAudiobooks = [...filteredAudiobooks].sort((a, b) => {
+    const sortedEmployees = [...filteredEmployees].sort((a, b) => {
         if (sortOrder === "id-asc") return a.id - b.id;
         if (sortOrder === "id-desc") return b.id - a.id;
-        if (sortOrder === "name-asc") return a.title.localeCompare(b.title);
-        if (sortOrder === "name-desc") return b.title.localeCompare(a.title);
+        if (sortOrder === "name-asc") return a.name.localeCompare(b.name);
+        if (sortOrder === "name-desc") return b.name.localeCompare(a.name);
         return 0;
     });
 
@@ -89,20 +88,20 @@ const AudioBookList = () => {
     
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentAudiobooks = sortedAudiobooks.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(sortedAudiobooks.length / itemsPerPage);
+    const currentEmployees = sortedEmployees.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
 
   return (
-    <div className='audiobook-list'>
+    <div className='employee-list'>
         <ToastContainer position="top-right" autoClose={3000} />
-        <h1>Audiobook</h1>
-        <div className="audiobook-list-header">
+        <h1>Employee</h1>
+        <div className="employee-list-header">
             <div className="title">
-                Audiobook list
+                Employee list
                 <div className="action">
                     <input
                         type="text"
-                        placeholder="Input audiobook name or id ..." 
+                        placeholder="Input employee name or id ..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}   
                     />
@@ -116,40 +115,38 @@ const AudioBookList = () => {
                 </div>
             </div>
             <div className="add">
-                <Link to="/audiobooks/new-audiobook">
-                    <button>Add New Audiobook</button>
-                </Link>  
+                <button onClick={() => navigate('/employees/new-employee')}>Add New Employee</button>
             </div>
         </div>
-        <div className="audiobook-list-container">
+        <div className="employee-list-container">
             <table>
                 <thead>
                     <tr>
                         <th>Id</th>
-                        <th>Image</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Voice</th>
+                        <th>Avatar</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {currentAudiobooks.map(audiobook => (
-                        <tr key={audiobook.id}>
-                            <td>{audiobook.id}</td>
+                    {currentEmployees.map(employee => (
+                        <tr key={employee.id}>
+                            <td>{employee.id}</td>
                             <td>
-                                <img src={handleImageUrl(audiobook.image)} alt="" />
+                                <img src={handleImageUrl(employee.avatar)} alt="" />
                             </td>
-                            <td>{audiobook.title}</td>
-                            <td>{audiobook.author.name}</td>
-                            <td>{audiobook.voice.name}</td>
+                            <td>{employee.name}</td>
+                            <td>{employee.email}</td>
+                            <td>{employee.phoneNumber}</td>
                             <td >
                                 <div className="action">
-                                    <button onClick={() => navigate(`/audiobooks/update/${audiobook.id}`)}>Update</button>
-                                    <button onClick={() => {handleDelete(audiobook.id) }}>
+                                    <button onClick={() => navigate(`/employees/update/${employee.id}`)}>Update</button>
+                                    <button onClick={() => {handleDelete(employee.id) }}>
                                         Delete
                                     </button>
-                                    <button onClick={() => navigate(`/audiobooks/detail/${audiobook.id}`)}>Detail</button>
+                                    <button onClick={() => navigate(`/employee/detail/${employee.id}`)}>Detail</button>
                                 </div>
                                 
                             </td>
@@ -166,8 +163,8 @@ const AudioBookList = () => {
             </button>
             <span>{currentPage} / {totalPages}</span>
             <button 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(audiobooks.length / itemsPerPage)))}
-                    disabled={currentPage === Math.ceil(audiobooks.length / itemsPerPage)}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(employees.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(employees.length / itemsPerPage)}
                 >
                     Next
             </button>
@@ -176,4 +173,4 @@ const AudioBookList = () => {
   )
 }
 
-export default AudioBookList
+export default EmployeeList
