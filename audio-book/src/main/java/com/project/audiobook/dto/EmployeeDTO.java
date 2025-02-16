@@ -11,9 +11,11 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class EmployeeDTO {
+    private Long id;
     private String name;
     private String phoneNumber;
     private String email;
+    private String password;
     private String avatar;
     private Set<String> roles;
 }

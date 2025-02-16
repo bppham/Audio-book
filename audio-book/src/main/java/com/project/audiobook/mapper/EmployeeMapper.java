@@ -11,9 +11,11 @@ import java.util.stream.Collectors;
 public class EmployeeMapper {
     public EmployeeDTO toDTO(Employee employee) {
         return new EmployeeDTO(
+                employee.getId(),
                 employee.getName(),
                 employee.getPhoneNumber(),
                 employee.getEmail(),
+                employee.getPassword(),
                 employee.getAvatar(),
                 employee.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
         );
@@ -24,6 +26,7 @@ public class EmployeeMapper {
         employee.setName(employeeDTO.getName());
         employee.setPhoneNumber(employeeDTO.getPhoneNumber());
         employee.setEmail(employeeDTO.getEmail());
+        employee.setPassword(employeeDTO.getPassword());
         employee.setAvatar(employeeDTO.getAvatar());
         return employee;
     }

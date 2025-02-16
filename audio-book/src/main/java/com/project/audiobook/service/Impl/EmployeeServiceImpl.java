@@ -87,15 +87,25 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Update image
         if(avatarFile != null && !avatarFile.isEmpty()) {
             String avatarUrl = fileStorageService.storeFile(avatarFile);
-            employeeDTO.setAvatar(avatarUrl);
+            existingEmployee.setAvatar(avatarUrl);
             System.out.println("Have new image: " + avatarUrl);
         } else {
             employeeDTO.setAvatar(existingEmployee.getAvatar());
             System.out.println("Old image");
         }
 
+        Set<Role> roles = employeeDTO.getRoles().stream()
+                .map(roleName -> roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+                .collect(Collectors.toSet());
+
+        existingEmployee.setRoles(roles);
+        existingEmployee.setName(employeeDTO.getName());
         existingEmployee.setEmail(employeeDTO.getEmail());
         existingEmployee.setPhoneNumber(employeeDTO.getPhoneNumber());
+        existingEmployee.setPassword(existingEmployee.getPassword());
+
+
         employeeRepository.save(existingEmployee);
 
         return employeeMapper.toDTO(existingEmployee);
