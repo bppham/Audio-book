@@ -1,34 +1,43 @@
 package com.project.audiobook.mapper;
 
-import com.project.audiobook.dto.EmployeeDTO;
+import com.project.audiobook.dto.request.Employee.EmployeeCreationRequest;
+import com.project.audiobook.dto.request.Employee.EmployeeUpdationRequest;
+import com.project.audiobook.dto.response.EmployeeResponse;
 import com.project.audiobook.entity.Employee;
 import com.project.audiobook.entity.Role;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-public class EmployeeMapper {
-    public EmployeeDTO toDTO(Employee employee) {
-        return new EmployeeDTO(
-                employee.getId(),
-                employee.getName(),
-                employee.getPhoneNumber(),
-                employee.getEmail(),
-                employee.getPassword(),
-                employee.getAvatar(),
-                employee.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
-        );
+@Mapper(componentModel = "spring")
+public interface EmployeeMapper {
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "mapRoleNames")
+    EmployeeResponse toEmployeeResponse(Employee employee);
+
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "mapRoleEntities")
+    Employee toEmployee(EmployeeCreationRequest request);
+
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "mapRoleEntities")
+    Employee toEmployeeFromUpdation(EmployeeUpdationRequest request);
+
+    @Named("mapRoleNames")
+    default Set<String> mapRoleNames(Set<Role> roles) {
+        return roles.stream().map(Role::getName).collect(Collectors.toSet());
     }
 
-    public Employee toEntity(EmployeeDTO employeeDTO) {
-        Employee employee = new Employee();
-        employee.setName(employeeDTO.getName());
-        employee.setPhoneNumber(employeeDTO.getPhoneNumber());
-        employee.setEmail(employeeDTO.getEmail());
-        employee.setPassword(employeeDTO.getPassword());
-        employee.setAvatar(employeeDTO.getAvatar());
-        return employee;
+    @Named("mapRoleEntities")
+    default Set<Role> mapRoleEntities(Set<String> roleNames) {
+        return roleNames.stream().map(name -> {
+            Role role = new Role();
+            role.setName(name);
+            return role;
+        }).collect(Collectors.toSet());
     }
 
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "mapRoleEntities")
+    void updateEmployeeFromRequest(EmployeeUpdationRequest request, @MappingTarget Employee employee);
 }

@@ -13,10 +13,22 @@ import EmployeeList from './pages/Employee/EmployeeList/EmployeeList';
 import EmployeeAdd from './pages/Employee/EmployeeAdd/EmployeeAdd';
 import EmployeeUpdate from './pages/Employee/EmployeeUpdate/EmployeeUpdate';
 import EmployeeDetail from './pages/Employee/EmployeeDetail/EmployeeDetail';
+import Login from './pages/Authentication/Login/Login';
 
 function App() {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/*" element={<MainLayout />} />
+            </Routes>
+        </Router>
+    );
+}
+
+function MainLayout() {
   return (
-    <Router>
+    <>
         <Navbar/>
         <div className="container">
             <Sidebar/>
@@ -38,7 +50,7 @@ function App() {
             </Routes>
         </div>
 
-    </Router>
+    </>
   )
 }
 

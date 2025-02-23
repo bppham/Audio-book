@@ -1,18 +1,16 @@
 package com.project.audiobook.mapper;
 
-import com.project.audiobook.dto.VoiceDTO;
+import com.project.audiobook.dto.request.Voice.VoiceRequest;
+import com.project.audiobook.dto.response.VoiceResponse;
 import com.project.audiobook.entity.Voice;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-import java.util.ArrayList;
-
-@Component
-public class VoiceMapper {
-    public VoiceDTO toDTO(Voice voice) {
-        return new VoiceDTO(voice.getId(), voice.getName(), voice.getAudioBookCount());
-    }
-
-    public Voice toEntity(VoiceDTO voiceDTO) {
-        return new Voice(voiceDTO.getId(), voiceDTO.getName(), new ArrayList<>());
-    }
+@Mapper(componentModel = "spring")
+public interface VoiceMapper {
+    Voice toVoice(VoiceRequest request);
+    @Mapping(target = "audioBookCount", expression = "java(voice.getAudioBooks() != null ? voice.getAudioBooks().size() : 0)")
+    VoiceResponse toVoiceResponse(Voice voice);
+    void updateVoice(@MappingTarget Voice voice, VoiceRequest request);
 }

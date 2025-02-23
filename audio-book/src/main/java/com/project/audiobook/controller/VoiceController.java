@@ -1,53 +1,54 @@
 package com.project.audiobook.controller;
 
-import com.project.audiobook.dto.VoiceDTO;
-import com.project.audiobook.mapper.VoiceMapper;
+import com.project.audiobook.dto.request.Voice.VoiceRequest;
+import com.project.audiobook.dto.response.ApiResponse;
+import com.project.audiobook.dto.response.VoiceResponse;
 import com.project.audiobook.service.VoiceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/voices")
+@RequestMapping("/voices")
 public class VoiceController {
-    
-    private final VoiceService voiceService;
-    private final VoiceMapper voiceMapper;
 
     @Autowired
-    public VoiceController(VoiceService voiceService, VoiceMapper voiceMapper) {
-        this.voiceService = voiceService;
-        this.voiceMapper = voiceMapper;
-    }
+    private VoiceService voiceService;
 
     @PostMapping
-    public ResponseEntity<VoiceDTO> addVoice(@RequestBody VoiceDTO voiceDTO) {
-        return ResponseEntity.ok(voiceService.addVoice(voiceDTO));
+    ApiResponse<VoiceResponse> addVoice(@RequestBody @Valid VoiceRequest request) {
+        return ApiResponse.<VoiceResponse>builder()
+                .result(voiceService.createRequest(request))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<List<VoiceDTO>> getAllVoices() {
-        return ResponseEntity.ok(voiceService.getAllVoice());
+    ApiResponse<List<VoiceResponse>> getAllVoices() {
+        return ApiResponse.<List<VoiceResponse>>builder()
+                .result(voiceService.getAllVoices())
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VoiceDTO> getVoiceById(@PathVariable Long id) {
-        return ResponseEntity.ok(voiceService.getVoiceById(id));
+    ApiResponse<VoiceResponse> getVoiceById(@PathVariable Long id) {
+        return ApiResponse.<VoiceResponse>builder()
+                .result(voiceService.getVoice(id))
+                .build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VoiceDTO> updateVoice(@PathVariable Long id, @RequestBody VoiceDTO voiceDTO) {
-        return ResponseEntity.ok(voiceService.updateVoice(id, voiceDTO));
+    ApiResponse<VoiceResponse> updateVoice(@PathVariable Long id, @RequestBody VoiceRequest request) {
+        return ApiResponse.<VoiceResponse>builder()
+                .result(voiceService.updateVoice(id, request))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteVoice(@PathVariable Long id) {
+    ApiResponse<String> deleteVoice(@PathVariable Long id) {
         voiceService.deleteVoice(id);
-        return ResponseEntity.ok("Voice delete successfully");
+        return ApiResponse.<String>builder().result("Voice has been deleted").build();
     }
-
-
 }

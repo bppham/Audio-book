@@ -1,51 +1,54 @@
 package com.project.audiobook.controller;
 
-import com.project.audiobook.dto.AuthorDTO;
-import com.project.audiobook.mapper.AuthorMapper;
+import com.project.audiobook.dto.request.Author.AuthorRequest;
+import com.project.audiobook.dto.response.ApiResponse;
+import com.project.audiobook.dto.response.AuthorResponse;
 import com.project.audiobook.service.AuthorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/authors")
+@RequestMapping("/authors")
 public class AuthorController {
 
-    private final AuthorService authorService;
-    private final AuthorMapper authorMapper;
-
     @Autowired
-    public AuthorController(AuthorService authorService, AuthorMapper authorMapper) {
-        this.authorService = authorService;
-        this.authorMapper = authorMapper;
-    }
+    private AuthorService authorService;
 
     @PostMapping
-    public ResponseEntity<AuthorDTO> addAuthor(@RequestBody AuthorDTO authorDTO) {
-        return ResponseEntity.ok(authorService.addAuthor(authorDTO));
+    ApiResponse<AuthorResponse> addAuthor(@RequestBody @Valid AuthorRequest request) {
+        return ApiResponse.<AuthorResponse>builder()
+                .result(authorService.createRequest(request))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
-        return ResponseEntity.ok(authorService.getAllAuthors());
+    ApiResponse<List<AuthorResponse>> getAllAuthors() {
+        return ApiResponse.<List<AuthorResponse>>builder()
+                .result(authorService.getAllAuthors())
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuthorDTO> getAuthorById(@PathVariable Long id) {
-        return ResponseEntity.ok(authorService.getAuthorById(id));
+    ApiResponse<AuthorResponse> getAuthorById(@PathVariable Long id) {
+        return ApiResponse.<AuthorResponse>builder()
+                .result(authorService.getAuthor(id))
+                .build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AuthorDTO> updateAuthor(@PathVariable Long id, @RequestBody AuthorDTO authorDTO) {
-        return ResponseEntity.ok(authorService.updateAuthor(id, authorDTO));
+    ApiResponse<AuthorResponse> updateAuthor(@PathVariable Long id, @RequestBody AuthorRequest request) {
+        return ApiResponse.<AuthorResponse>builder()
+                .result(authorService.updateAuthor(id, request))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAuthor(@PathVariable Long id) {
+    ApiResponse<String> deleteAuthor(@PathVariable Long id) {
         authorService.deleteAuthor(id);
-        return ResponseEntity.ok("Author delete successfully");
+        return ApiResponse.<String>builder().result("Author has been deleted").build();
     }
 }

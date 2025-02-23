@@ -7,31 +7,43 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/files")
 @CrossOrigin(origins = "*")
 public class FileController {
-    private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
-    @GetMapping("/{fileName:.+}")
-    public ResponseEntity<Resource> getFile(@PathVariable String fileName) {
+    private final Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+
+    @GetMapping("/{title}/{type}/{fileName:.+}")
+    public ResponseEntity<Resource> getFile(
+            @PathVariable String title,
+            @PathVariable String type,
+            @PathVariable String fileName) {
         try {
-            Path filePath = fileStorageLocation.resolve(fileName).normalize();
-            System.out.println("Đường dẫn file: " + filePath);
+            // Xác định đường dẫn file theo title và loại file (image/audio)
+            Path filePath = uploadDir.resolve(title.replace(" ", "_")).resolve(type).resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {
+                // Xác định loại file động
+                String contentType = Files.probeContentType(filePath);
+                if (contentType == null) {
+                    contentType = "application/octet-stream"; // Default nếu không xác định được
+                }
+
                 return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG) // Hoặc MediaType.IMAGE_PNG nếu là ảnh PNG
+                        .contentType(MediaType.parseMediaType(contentType))
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                         .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (MalformedURLException e) {
+        } catch (IOException e) {
             return ResponseEntity.badRequest().build();
         }
     }

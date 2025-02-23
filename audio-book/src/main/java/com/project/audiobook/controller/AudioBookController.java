@@ -3,9 +3,15 @@ package com.project.audiobook.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.audiobook.dto.AudioBookDTO;
+import com.project.audiobook.dto.request.AudioBook.AudioBookRequest;
+import com.project.audiobook.dto.response.ApiResponse;
+import com.project.audiobook.dto.response.AudioBookResponse;
+import com.project.audiobook.dto.response.AuthorResponse;
+import com.project.audiobook.dto.response.CategoryResponse;
 import com.project.audiobook.service.AudioBookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,53 +20,58 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/audiobooks")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
+@RequestMapping("/audiobooks")
 public class AudioBookController {
-    private final AudioBookService audioBookService;
+    @Autowired
+    private AudioBookService audioBookService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AudioBookDTO> createAudioBook(
+    ApiResponse<AudioBookResponse> createAudioBook( @Valid
             @RequestPart("audioBook") String audioBookJson,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestPart(value = "audioFile", required = false) List<MultipartFile> audioFile) throws JsonProcessingException {
+            @RequestPart(value = "audioFile", required = false) List<MultipartFile> audioFiles) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        AudioBookDTO audioBookDTO = objectMapper.readValue(audioBookJson, AudioBookDTO.class);
-        System.out.println("JSON: " + audioBookJson);
+        AudioBookRequest request = objectMapper.readValue(audioBookJson, AudioBookRequest.class);
 
-        return ResponseEntity.ok(audioBookService.createAudioBook(audioBookDTO, image, audioFile));
+        return ApiResponse.<AudioBookResponse>builder()
+                .result(audioBookService.createRequest(request, image, audioFiles))
+                .build();
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AudioBookDTO> updateAudioBook(
+    ApiResponse<AudioBookResponse> updateAudioBook(@Valid
             @PathVariable Long id,
             @RequestPart("audioBook") String audioBookJson,
-            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestPart(value = "imageFile", required = false) MultipartFile image,
             @RequestPart(value = "audioFiles", required = false) List<MultipartFile> audioFiles) throws JsonProcessingException{
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        AudioBookDTO audioBookDTO = objectMapper.readValue(audioBookJson, AudioBookDTO.class);
-        AudioBookDTO updatedAudioBook = audioBookService.updateAudioBook(id, audioBookDTO, imageFile, audioFiles);
-        return ResponseEntity.ok(updatedAudioBook);
+        AudioBookRequest request = objectMapper.readValue(audioBookJson, AudioBookRequest.class);
+        return ApiResponse.<AudioBookResponse>builder()
+                .result(audioBookService.updateAudioBook(id, request, image, audioFiles))
+                .build();
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deleteAudioBook(@PathVariable Long id) {
+    public ApiResponse<String> deleteAudioBook(@PathVariable Long id) {
         audioBookService.deleteAudioBook(id);
-        return ResponseEntity.ok("Audiobook delete successfully");
+        return ApiResponse.<String>builder().result("Audio book has been deleted").build();
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<AudioBookDTO> getAudioBookById(@PathVariable Long id){
-        AudioBookDTO audioBookDTO = audioBookService.getAudioBookById(id);
-        return ResponseEntity.ok(audioBookDTO);
+    ApiResponse<AudioBookResponse> getAudioBookById(@PathVariable Long id){
+        return ApiResponse.<AudioBookResponse>builder()
+                .result(audioBookService.getAudioBookById(id))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<List<AudioBookDTO>> getAllAudioBook() {
-        return ResponseEntity.ok(audioBookService.getAllAudioBooks());
+    public ApiResponse<List<AudioBookResponse>> getAllAudioBook() {
+        return ApiResponse.<List<AudioBookResponse>>builder()
+                .result(audioBookService.getAllAudioBooks())
+                .build();
     }
 }

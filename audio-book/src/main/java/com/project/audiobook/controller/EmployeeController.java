@@ -3,59 +3,80 @@ package com.project.audiobook.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.audiobook.dto.EmployeeDTO;
+import com.project.audiobook.dto.request.Employee.EmployeeCreationRequest;
+import com.project.audiobook.dto.request.Employee.EmployeeUpdationRequest;
+import com.project.audiobook.dto.response.ApiResponse;
+import com.project.audiobook.dto.response.EmployeeResponse;
 import com.project.audiobook.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/employees")
+@RequestMapping("/employees")
 public class EmployeeController {
-    private final EmployeeService employeeService;
+    @Autowired
+    private EmployeeService employeeService;
 
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
-
-    @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(
-            @RequestPart("employee") String employeeJson,
-            @RequestPart(value = "avatar", required = false) MultipartFile avatar) throws JsonProcessingException {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<EmployeeResponse> addEmployee(@Valid @RequestPart("employee") String employeeJson,
+                                              @RequestPart(value = "avatar", required = false) MultipartFile avatar) throws JsonProcessingException{
         ObjectMapper objectMapper = new ObjectMapper();
-        EmployeeDTO employeeDTO = objectMapper.readValue(employeeJson, EmployeeDTO.class);
-        System.out.println("JSON: " + employeeDTO);
-        return ResponseEntity.ok(employeeService.createEmployee(employeeDTO, avatar));
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        EmployeeCreationRequest request = objectMapper.readValue(employeeJson, EmployeeCreationRequest.class);
+
+        try {
+            return ApiResponse.<EmployeeResponse>builder()
+                    .result(employeeService.createEmployee(request, avatar))
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<EmployeeDTO> updateEmployee(
-            @PathVariable Long id,
-            @RequestPart("employee") String employeeJson,
-            @RequestPart(value = "avatar", required = false) MultipartFile avatar) throws JsonProcessingException{
+    ApiResponse<EmployeeResponse> updateEmployee(@Valid
+                                                   @PathVariable Long id,
+                                                   @RequestPart("employee") String employeeJson,
+                                                   @RequestPart(value = "avatar", required = false) MultipartFile image) throws JsonProcessingException{
         ObjectMapper objectMapper = new ObjectMapper();
-        EmployeeDTO employeeDTO = objectMapper.readValue(employeeJson, EmployeeDTO.class);
-        return ResponseEntity.ok(employeeService.updateEmployee(id, employeeDTO, avatar));
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        EmployeeUpdationRequest request = objectMapper.readValue(employeeJson, EmployeeUpdationRequest.class);
+        try {
+            return ApiResponse.<EmployeeResponse>builder()
+                    .result(employeeService.updateEmployee(id, request, image))
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+    public ApiResponse<String> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
-        return ResponseEntity.ok("Employee delete successfully");
+        return ApiResponse.<String>builder().result("Employee has been deleted").build();
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long id) {
-        EmployeeDTO employeeDTO = employeeService.getEmployeeById(id);
-        return ResponseEntity.ok(employeeDTO);
+    ApiResponse<EmployeeResponse> getEmployeeById(@PathVariable Long id){
+        return ApiResponse.<EmployeeResponse>builder()
+                .result(employeeService.getEmployee(id))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+    public ApiResponse<List<EmployeeResponse>> getAllEmployee() {
+        return ApiResponse.<List<EmployeeResponse>>builder()
+                .result(employeeService.getAllEmployees())
+                .build();
     }
+
+
+
 }

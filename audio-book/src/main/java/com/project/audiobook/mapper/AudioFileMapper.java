@@ -1,19 +1,16 @@
 package com.project.audiobook.mapper;
 
-import com.project.audiobook.dto.AudioFileDTO;
+import com.project.audiobook.dto.request.AudioBook.AudioBookRequest;
+import com.project.audiobook.dto.request.AudioFile.AudioFileRequest;
+import com.project.audiobook.dto.response.AudioBookResponse;
 import com.project.audiobook.entity.AudioBook;
 import com.project.audiobook.entity.AudioFile;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
 
-@Component
-public class AudioFileMapper {
-    public AudioFileDTO toDTO(AudioFile audioFile) {
-        return new AudioFileDTO(audioFile.getId(),
-                audioFile.getFileName(),
-                audioFile.getFileUrl());
-    }
+@Mapper(componentModel = "spring")
+public interface AudioFileMapper {
+    AudioFile toAudioFile(AudioFileRequest request);
 
-    public AudioFile toEntity(AudioFileDTO audioFileDTO, AudioBook audioBook) {
-        return new AudioFile(null, audioFileDTO.getFileName(), audioFileDTO.getFileUrl(), audioBook);
-    }
+    AudioBookResponse toAudioBookResponse(AudioBook audioBook);
+
 }

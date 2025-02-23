@@ -1,53 +1,52 @@
 package com.project.audiobook.controller;
 
-import com.project.audiobook.dto.CategoryDTO;
-import com.project.audiobook.mapper.CategoryMapper;
+import com.project.audiobook.dto.response.ApiResponse;
+import com.project.audiobook.dto.request.Category.CategoryRequest;
+import com.project.audiobook.dto.response.CategoryResponse;
 import com.project.audiobook.service.CategoryService;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 public class CategoryController {
-
-    private final CategoryService categoryService;
-    private final CategoryMapper categoryMapper;
-
     @Autowired
-    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
-        this.categoryService = categoryService;
-        this.categoryMapper = categoryMapper;
-    }
+    private CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> createCategory (@RequestBody CategoryDTO categoryDTO) {
-        return ResponseEntity.ok(categoryService.createCategory(categoryDTO));
+    ApiResponse<CategoryResponse> createCategory (@RequestBody @Valid CategoryRequest request) {
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryService.createRequest(request))
+                .build();
+    }
+
+    @GetMapping("{id}")
+    ApiResponse<CategoryResponse> getCategory (@PathVariable Long id) {
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryService.getCategory(id))
+                .build();
+    }
+
+    @PutMapping("{id}")
+    ApiResponse<CategoryResponse> updateCategory (@PathVariable @Valid Long id, @RequestBody CategoryRequest request) {
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryService.updateCategory(id,request))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    ApiResponse<List<CategoryResponse>> getCategories(){
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .result(categoryService.getAllCategories())
+                .build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.getCategoryById(id));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, categoryDTO));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
+    @DeleteMapping("{id}")
+    ApiResponse<String> deleteCategory (@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.ok("Category delete successfully");
+        return ApiResponse.<String>builder().result("Category has been deleted").build();
     }
 }
